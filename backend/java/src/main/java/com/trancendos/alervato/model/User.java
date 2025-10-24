@@ -11,14 +11,22 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a user in the system.
+ * 
+ * This entity stores user authentication and profile information,
+ * including credentials, personal details, and audit timestamps.
+ * Users can have multiple roles assigned through the user_roles relationship.
+ * 
+ * @author Trancendos Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
-/**
- * Represents a user in the system.
- */
 @EntityListeners(AuditingEntityListener.class)
 public class User {
     
@@ -68,6 +76,13 @@ public class User {
     // Constructors
     public User() {}
     
+    /**
+     * Creates a new User with the specified credentials.
+     * 
+     * @param username the unique username for the user
+     * @param email the user's email address
+     * @param password the user's encrypted password
+     */
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
