@@ -10,10 +10,16 @@ from datetime import datetime, timedelta
 
 class AIService:
     """
-    AI Service for financial predictions and anomaly detection
+    AI Service for financial predictions and anomaly detection.
+
+    This service provides methods for training and using machine learning models to
+    predict spending, detect anomalies in transactions, and generate financial insights.
     """
     
     def __init__(self):
+        """
+        Initializes the AIService.
+        """
         self.spending_model = None
         self.anomaly_detector = None
         self.scaler = StandardScaler()
@@ -26,7 +32,9 @@ class AIService:
         self._load_models()
     
     def _load_models(self):
-        """Load pre-trained models from disk"""
+        """
+        Load pre-trained models from disk.
+        """
         try:
             spending_model_path = os.path.join(self.model_path, "spending_predictor.joblib")
             if os.path.exists(spending_model_path):
@@ -44,7 +52,9 @@ class AIService:
             print(f"Error loading models: {e}")
     
     def _save_models(self):
-        """Save trained models to disk"""
+        """
+        Save trained models to disk.
+        """
         try:
             if self.spending_model:
                 joblib.dump(self.spending_model, os.path.join(self.model_path, "spending_predictor.joblib"))
@@ -58,7 +68,15 @@ class AIService:
             print(f"Error saving models: {e}")
     
     def prepare_features(self, transactions: List[Dict]) -> pd.DataFrame:
-        """Prepare features from transaction data"""
+        """
+        Prepare features from transaction data.
+
+        Args:
+            transactions (List[Dict]): A list of transaction dictionaries.
+
+        Returns:
+            pd.DataFrame: A DataFrame with the prepared features.
+        """
         if not transactions:
             return pd.DataFrame()
             
@@ -86,7 +104,15 @@ class AIService:
         return df
     
     def train_spending_predictor(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """Train a model to predict future spending"""
+        """
+        Train a model to predict future spending.
+
+        Args:
+            transactions (List[Dict]): A list of transaction dictionaries.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the training results.
+        """
         df = self.prepare_features(transactions)
         
         if len(df) < 10:  # Need minimum data for training
@@ -134,7 +160,15 @@ class AIService:
         }
     
     def predict_spending(self, features: Dict[str, Any]) -> Dict[str, Any]:
-        """Predict spending amount based on features"""
+        """
+        Predict spending amount based on features.
+
+        Args:
+            features (Dict[str, Any]): A dictionary of features for prediction.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the prediction results.
+        """
         if not self.spending_model:
             return {"success": False, "message": "Model not trained"}
         
@@ -175,7 +209,15 @@ class AIService:
             }
     
     def train_anomaly_detector(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """Train anomaly detection model"""
+        """
+        Train anomaly detection model.
+
+        Args:
+            transactions (List[Dict]): A list of transaction dictionaries.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the training results.
+        """
         df = self.prepare_features(transactions)
         
         if len(df) < 20:  # Need minimum data for anomaly detection
@@ -218,7 +260,15 @@ class AIService:
         }
     
     def detect_anomalies(self, transactions: List[Dict]) -> List[Dict[str, Any]]:
-        """Detect anomalous transactions"""
+        """
+        Detect anomalous transactions.
+
+        Args:
+            transactions (List[Dict]): A list of transaction dictionaries.
+
+        Returns:
+            List[Dict[str, Any]]: A list of anomalous transactions.
+        """
         if not self.anomaly_detector:
             return []
         
@@ -258,7 +308,15 @@ class AIService:
         return results
     
     def generate_insights(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """Generate AI-powered financial insights"""
+        """
+        Generate AI-powered financial insights.
+
+        Args:
+            transactions (List[Dict]): A list of transaction dictionaries.
+
+        Returns:
+            Dict[str, Any]: A dictionary of financial insights.
+        """
         insights = {
             "spending_trends": [],
             "savings_opportunities": [],

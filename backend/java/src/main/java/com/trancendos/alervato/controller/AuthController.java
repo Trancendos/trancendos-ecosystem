@@ -17,6 +17,12 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    /**
+     * Registers a new user.
+     *
+     * @param registerRequest The request body containing the user's registration details.
+     * @return A `ResponseEntity` indicating the result of the registration attempt.
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
@@ -27,6 +33,12 @@ public class AuthController {
         }
     }
 
+    /**
+     * Authenticates a user.
+     *
+     * @param loginRequest The request body containing the user's login credentials.
+     * @return A `ResponseEntity` containing the login response, or an error message.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
@@ -37,6 +49,12 @@ public class AuthController {
         }
     }
 
+    /**
+     * Logs out a user.
+     *
+     * @param token The authorization token of the user to be logged out.
+     * @return A `ResponseEntity` indicating the result of the logout attempt.
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token) {
         try {

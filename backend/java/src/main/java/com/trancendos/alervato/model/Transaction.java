@@ -10,6 +10,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a financial transaction in the system.
+ */
 @Entity
 @Table(name = "transactions")
 @EntityListeners(AuditingEntityListener.class)
@@ -54,6 +57,9 @@ public class Transaction {
     @Column(name = "reference_number", unique = true)
     private String referenceNumber;
     
+    /**
+     * An enumeration for the type of a transaction.
+     */
     public enum TransactionType {
         INCOME, EXPENSE, TRANSFER
     }

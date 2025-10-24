@@ -10,6 +10,10 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
+/**
+ * Login component for user authentication.
+ * @returns {JSX.Element} The login form component.
+ */
 const Login = () => {
   const [credentials, setCredentials] = useState({
     email: '',
@@ -18,6 +22,10 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles changes to the input fields.
+   * @param {React.ChangeEvent<HTMLInputElement>} e The event object.
+   */
   const handleChange = (e) => {
     setCredentials({
       ...credentials,
@@ -25,6 +33,10 @@ const Login = () => {
     });
   };
 
+  /**
+   * Handles the form submission.
+   * @param {React.FormEvent<HTMLFormElement>} e The event object.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

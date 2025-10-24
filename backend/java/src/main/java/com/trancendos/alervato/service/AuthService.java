@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Service class for authentication-related operations.
+ */
 @Service
 public class AuthService {
     
@@ -37,6 +40,12 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
     
+    /**
+     * Registers a new user.
+     *
+     * @param registerRequest The request object containing the user's registration details.
+     * @throws RuntimeException if the username or email is already in use.
+     */
     public void registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new RuntimeException("Username is already taken!");
@@ -63,6 +72,12 @@ public class AuthService {
         userRepository.save(user);
     }
     
+    /**
+     * Authenticates a user.
+     *
+     * @param loginRequest The request object containing the user's login credentials.
+     * @return A `LoginResponse` object containing the JWT and user details.
+     */
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -76,6 +91,11 @@ public class AuthService {
         return new LoginResponse(jwt, user.getId(), user.getUsername(), user.getEmail());
     }
     
+    /**
+     * Logs out a user.
+     *
+     * @param token The JWT of the user to be logged out.
+     */
     public void logoutUser(String token) {
         // Add token to blacklist (implement as needed)
         SecurityContextHolder.clearContext();

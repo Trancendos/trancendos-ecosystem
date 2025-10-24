@@ -7,11 +7,13 @@ import enum
 Base = declarative_base()
 
 class TransactionType(enum.Enum):
+    """An enumeration for the type of a transaction."""
     INCOME = "INCOME"
     EXPENSE = "EXPENSE"
     TRANSFER = "TRANSFER"
 
 class Transaction(Base):
+    """Represents a financial transaction in the system."""
     __tablename__ = "transactions"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -29,6 +31,7 @@ class Transaction(Base):
     user = relationship("User", back_populates="transactions")
 
 class User(Base):
+    """Represents a user in the system."""
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)

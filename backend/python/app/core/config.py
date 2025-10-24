@@ -3,6 +3,9 @@ from typing import List
 import os
 
 class Settings(BaseSettings):
+    """
+    Application settings.
+    """
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
@@ -46,4 +49,7 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 def get_settings() -> Settings:
+    """
+    Returns an instance of the Settings class.
+    """
     return Settings()

@@ -24,8 +24,18 @@ async def get_analytics_overview(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Get comprehensive analytics overview for the user
+    """Get comprehensive analytics overview for the user.
+
+    Args:
+        days (int, optional): The number of days to look back for analytics. Defaults to 30.
+        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
+        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+
+    Raises:
+        HTTPException: If the analytics calculation fails.
+
+    Returns:
+        AnalyticsResponse: An object containing the analytics overview.
     """
     analytics_service = AnalyticsService(db)
     
@@ -68,8 +78,18 @@ async def get_spending_patterns(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Analyze spending patterns and identify trends
+    """Analyze spending patterns and identify trends.
+
+    Args:
+        days (int, optional): The number of days to look back for spending patterns. Defaults to 90.
+        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
+        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+
+    Raises:
+        HTTPException: If the pattern analysis fails.
+
+    Returns:
+        SpendingPatternResponse: An object containing the spending pattern analysis.
     """
     analytics_service = AnalyticsService(db)
     
@@ -110,8 +130,19 @@ async def get_category_analysis(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Detailed analysis of spending by category
+    """Detailed analysis of spending by category.
+
+    Args:
+        category (Optional[str], optional): The category to analyze. If None, all categories are analyzed. Defaults to None.
+        days (int, optional): The number of days to look back for category analysis. Defaults to 30.
+        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
+        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+
+    Raises:
+        HTTPException: If the category analysis fails.
+
+    Returns:
+        CategoryAnalysisResponse: An object containing the category analysis.
     """
     analytics_service = AnalyticsService(db)
     
@@ -144,8 +175,19 @@ async def get_trend_analysis(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Analyze financial trends over time
+    """Analyze financial trends over time.
+
+    Args:
+        trend_type (str, optional): The type of trend to analyze. Defaults to "spending".
+        period (str, optional): The period to analyze the trend over. Defaults to "monthly".
+        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
+        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+
+    Raises:
+        HTTPException: If the trend analysis fails.
+
+    Returns:
+        TrendAnalysisResponse: An object containing the trend analysis.
     """
     analytics_service = AnalyticsService(db)
     

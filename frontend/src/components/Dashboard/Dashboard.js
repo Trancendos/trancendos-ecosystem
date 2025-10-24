@@ -10,6 +10,10 @@ import {
 import axios from 'axios';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
+/**
+ * Dashboard component to display financial overview.
+ * @returns {JSX.Element} The dashboard component.
+ */
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);

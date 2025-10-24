@@ -21,6 +21,13 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    /**
+     * Retrieves a paginated list of transactions for the authenticated user.
+     *
+     * @param authentication The authentication object containing the user's details.
+     * @param pageable The pagination information.
+     * @return A `ResponseEntity` containing a page of transactions.
+     */
     @GetMapping
     public ResponseEntity<Page<Transaction>> getUserTransactions(
             Authentication authentication,
@@ -30,6 +37,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+    /**
+     * Creates a new transaction for the authenticated user.
+     *
+     * @param transactionDTO The request body containing the transaction details.
+     * @param authentication The authentication object containing the user's details.
+     * @return A `ResponseEntity` containing the created transaction, or an error message.
+     */
     @PostMapping
     public ResponseEntity<?> createTransaction(
             @Valid @RequestBody TransactionDTO transactionDTO,
@@ -43,6 +57,13 @@ public class TransactionController {
         }
     }
 
+    /**
+     * Retrieves a specific transaction by its ID for the authenticated user.
+     *
+     * @param id The ID of the transaction to retrieve.
+     * @param authentication The authentication object containing the user's details.
+     * @return A `ResponseEntity` containing the requested transaction, or a not found response.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransaction(
             @PathVariable Long id,
@@ -56,6 +77,14 @@ public class TransactionController {
         }
     }
 
+    /**
+     * Updates an existing transaction for the authenticated user.
+     *
+     * @param id The ID of the transaction to update.
+     * @param transactionDTO The request body containing the updated transaction details.
+     * @param authentication The authentication object containing the user's details.
+     * @return A `ResponseEntity` containing the updated transaction, or an error message.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTransaction(
             @PathVariable Long id,
@@ -70,6 +99,13 @@ public class TransactionController {
         }
     }
 
+    /**
+     * Deletes a transaction for the authenticated user.
+     *
+     * @param id The ID of the transaction to delete.
+     * @param authentication The authentication object containing the user's details.
+     * @return A `ResponseEntity` indicating the result of the deletion attempt.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransaction(
             @PathVariable Long id,
