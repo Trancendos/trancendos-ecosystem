@@ -1,0 +1,30 @@
+# DISABLED WORKFLOW - TOO COMPLEX FOR CURRENT SETUP
+# This workflow was causing CI/CD failures due to missing secrets and complex orchestration
+# Replaced with simpler ci-cd-simple.yml workflow
+# Can be re-enabled later when proper infrastructure is in place
+
+name: Service Orchestration & Automation (DISABLED)
+
+# Disabled by renaming to .yml.disabled
+# Original complex workflow moved here for future reference
+
+# on:
+#   schedule:
+#     - cron: '0 2 * * *'  # Daily at 2 AM UTC
+#     - cron: '0 */6 * * *'  # Every 6 hours
+#   workflow_dispatch:
+
+# This workflow required:
+# - SLACK_WEBHOOK secret
+# - RAILWAY_TOKEN secret
+# - AWS_ACCESS_KEY_ID secret
+# - DATABASE_URL secret
+# - Multiple service endpoints
+# - Complex service discovery logic
+
+# For now, using simpler ci-cd-simple.yml workflow that focuses on:
+# - Code validation
+# - Basic testing
+# - Documentation checks
+# - Security scanning
+# - No external dependencies
