@@ -25,9 +25,6 @@ import java.util.Set;
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
-/**
- * Represents a user in the system.
- */
 @EntityListeners(AuditingEntityListener.class)
 public class User {
     

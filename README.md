@@ -57,8 +57,11 @@ This repository holds the infrastructure configuration (Docker, CI/CD) and high-
 git clone https://github.com/Trancendos/trancendos-ecosystem.git
 cd trancendos-ecosystem
 
-# Start development environment
-docker-compose up
+# Start development environment (uses development configuration)
+docker-compose -f docker-compose.dev.yml up
+
+# Alternative: If no dev config exists, use override for development
+# docker-compose up
 
 # Initialize services
 npm run setup:dev
@@ -72,6 +75,16 @@ npm run deploy:staging
 # Deploy to production (requires approval)
 npm run deploy:production
 ```
+
+## Environment Configuration
+
+### Development
+- Use `docker-compose -f docker-compose.dev.yml up` for development environment
+- Development config includes hot-reload, debug modes, and development databases
+
+### Production
+- Use `docker-compose up` only in production with proper environment variables
+- Ensure all security configurations are properly set
 
 ## Security Notice
 
