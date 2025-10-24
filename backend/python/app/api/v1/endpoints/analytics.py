@@ -28,8 +28,8 @@ async def get_analytics_overview(
 
     Args:
         days (int, optional): The number of days to look back for analytics. Defaults to 30.
-        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+        current_user (dict): The current authenticated user (injected by FastAPI).
+        db (AsyncSession): The database session (injected by FastAPI).
 
     Raises:
         HTTPException: If the analytics calculation fails.
@@ -82,8 +82,8 @@ async def get_spending_patterns(
 
     Args:
         days (int, optional): The number of days to look back for spending patterns. Defaults to 90.
-        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+        current_user (dict): The current authenticated user (injected by FastAPI).
+        db (AsyncSession): The database session (injected by FastAPI).
 
     Raises:
         HTTPException: If the pattern analysis fails.
@@ -135,8 +135,8 @@ async def get_category_analysis(
     Args:
         category (Optional[str], optional): The category to analyze. If None, all categories are analyzed. Defaults to None.
         days (int, optional): The number of days to look back for category analysis. Defaults to 30.
-        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+        current_user (dict): The current authenticated user (injected by FastAPI).
+        db (AsyncSession): The database session (injected by FastAPI).
 
     Raises:
         HTTPException: If the category analysis fails.
@@ -180,8 +180,8 @@ async def get_trend_analysis(
     Args:
         trend_type (str, optional): The type of trend to analyze. Defaults to "spending".
         period (str, optional): The period to analyze the trend over. Defaults to "monthly".
-        current_user (dict, optional): The current authenticated user. Defaults to Depends(get_current_user).
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
+        current_user (dict): The current authenticated user (injected by FastAPI).
+        db (AsyncSession): The database session (injected by FastAPI).
 
     Raises:
         HTTPException: If the trend analysis fails.
