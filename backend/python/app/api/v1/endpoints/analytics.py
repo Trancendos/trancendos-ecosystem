@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
+from enum import Enum
 import pandas as pd
 import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,13 @@ from app.schemas.analytics import (
 )
 from app.services.analytics_service import AnalyticsService
 from main import get_current_user
+
+
+class PeriodEnum(str, Enum):
+    daily = "daily"
+    weekly = "weekly"
+    monthly = "monthly"
+
 
 router = APIRouter()
 
@@ -171,7 +179,7 @@ async def get_category_analysis(
 @router.get("/trends", response_model=TrendAnalysisResponse)
 async def get_trend_analysis(
     trend_type: str = "spending",
-    period: str = "monthly",  # daily, weekly, monthly
+    period: PeriodEnum = PeriodEnum.monthly,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
