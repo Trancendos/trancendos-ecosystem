@@ -12,7 +12,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 
 /**
  * Dashboard component to display financial overview.
- * @returns {JSX.Element} The dashboard component.
+ * @return {JSX.Element} The dashboard component.
  */
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
