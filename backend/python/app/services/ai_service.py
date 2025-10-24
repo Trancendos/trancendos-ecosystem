@@ -9,17 +9,14 @@ import os
 from datetime import datetime, timedelta
 
 class AIService:
-    """
-    AI Service for financial predictions and anomaly detection.
+    """Provides AI-powered financial services, including predictions and anomaly detection.
 
-    This service provides methods for training and using machine learning models to
-    predict spending, detect anomalies in transactions, and generate financial insights.
+    This service encapsulates the logic for training and using machine learning models
+    to analyze financial data, predict future spending, and identify unusual transactions.
     """
     
     def __init__(self):
-        """
-        Initializes the AIService.
-        """
+        """Initializes the AIService, loading pre-trained models if available."""
         self.spending_model = None
         self.anomaly_detector = None
         self.scaler = StandardScaler()
@@ -32,9 +29,7 @@ class AIService:
         self._load_models()
     
     def _load_models(self):
-        """
-        Load pre-trained models from disk.
-        """
+        """Loads pre-trained machine learning models from the disk."""
         try:
             spending_model_path = os.path.join(self.model_path, "spending_predictor.joblib")
             if os.path.exists(spending_model_path):
@@ -52,9 +47,7 @@ class AIService:
             print(f"Error loading models: {e}")
     
     def _save_models(self):
-        """
-        Save trained models to disk.
-        """
+        """Saves the trained machine learning models to the disk."""
         try:
             if self.spending_model:
                 joblib.dump(self.spending_model, os.path.join(self.model_path, "spending_predictor.joblib"))
@@ -68,14 +61,15 @@ class AIService:
             print(f"Error saving models: {e}")
     
     def prepare_features(self, transactions: List[Dict]) -> pd.DataFrame:
-        """
-        Prepare features from transaction data.
+        """Transforms raw transaction data into a feature-rich DataFrame for modeling.
 
         Args:
-            transactions (List[Dict]): A list of transaction dictionaries.
+            transactions (List[Dict]): A list of dictionaries, where each dictionary
+                                      represents a transaction.
 
         Returns:
-            pd.DataFrame: A DataFrame with the prepared features.
+            pd.DataFrame: A DataFrame with engineered features suitable for model training
+                          and prediction. Returns an empty DataFrame if the input is empty.
         """
         if not transactions:
             return pd.DataFrame()
@@ -104,14 +98,14 @@ class AIService:
         return df
     
     def train_spending_predictor(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """
-        Train a model to predict future spending.
+        """Trains a machine learning model to predict future spending based on historical data.
 
         Args:
-            transactions (List[Dict]): A list of transaction dictionaries.
+            transactions (List[Dict]): A list of historical transaction data for training.
 
         Returns:
-            Dict[str, Any]: A dictionary containing the training results.
+            Dict[str, Any]: A dictionary containing the training results, including
+                            success status, model scores, and a message.
         """
         df = self.prepare_features(transactions)
         
@@ -160,14 +154,14 @@ class AIService:
         }
     
     def predict_spending(self, features: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Predict spending amount based on features.
+        """Predicts a future spending amount based on a given set of features.
 
         Args:
-            features (Dict[str, Any]): A dictionary of features for prediction.
+            features (Dict[str, Any]): A dictionary of features for a single prediction.
 
         Returns:
-            Dict[str, Any]: A dictionary containing the prediction results.
+            Dict[str, Any]: A dictionary containing the prediction result, including
+                            the predicted amount, confidence score, and success status.
         """
         if not self.spending_model:
             return {"success": False, "message": "Model not trained"}
@@ -209,14 +203,14 @@ class AIService:
             }
     
     def train_anomaly_detector(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """
-        Train anomaly detection model.
+        """Trains a model to detect anomalous or fraudulent transactions.
 
         Args:
-            transactions (List[Dict]): A list of transaction dictionaries.
+            transactions (List[Dict]): A list of historical transaction data for training.
 
         Returns:
-            Dict[str, Any]: A dictionary containing the training results.
+            Dict[str, Any]: A dictionary containing the training results, including
+                            the number of anomalies detected in the training set.
         """
         df = self.prepare_features(transactions)
         
@@ -260,14 +254,15 @@ class AIService:
         }
     
     def detect_anomalies(self, transactions: List[Dict]) -> List[Dict[str, Any]]:
-        """
-        Detect anomalous transactions.
+        """Detects anomalous transactions from a list of new transactions.
 
         Args:
-            transactions (List[Dict]): A list of transaction dictionaries.
+            transactions (List[Dict]): A list of transactions to be scanned for anomalies.
 
         Returns:
-            List[Dict[str, Any]]: A list of anomalous transactions.
+            List[Dict[str, Any]]: A list of dictionaries, where each dictionary
+                                  represents an anomalous transaction with additional
+                                  details like anomaly score and severity.
         """
         if not self.anomaly_detector:
             return []
@@ -308,14 +303,14 @@ class AIService:
         return results
     
     def generate_insights(self, transactions: List[Dict]) -> Dict[str, Any]:
-        """
-        Generate AI-powered financial insights.
+        """Generates AI-powered financial insights from a user's transaction history.
 
         Args:
-            transactions (List[Dict]): A list of transaction dictionaries.
+            transactions (List[Dict]): A list of transactions to analyze.
 
         Returns:
-            Dict[str, Any]: A dictionary of financial insights.
+            Dict[str, Any]: A dictionary containing various insights, such as spending
+                            trends, savings opportunities, and budget recommendations.
         """
         insights = {
             "spending_trends": [],

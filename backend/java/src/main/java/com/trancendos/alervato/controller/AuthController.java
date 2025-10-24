@@ -9,6 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controller for handling user authentication operations.
+ * <p>
+ * This class provides REST endpoints for user registration, login, and logout.
+ * It delegates the business logic to the {@link AuthService}.
+ *
+ * @author Trancendos
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -18,10 +27,10 @@ public class AuthController {
     private AuthService authService;
 
     /**
-     * Registers a new user.
+     * Registers a new user in the system.
      *
      * @param registerRequest The request body containing the user's registration details.
-     * @return A `ResponseEntity` indicating the result of the registration attempt.
+     * @return A {@link ResponseEntity} indicating the result of the registration attempt.
      */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -34,10 +43,10 @@ public class AuthController {
     }
 
     /**
-     * Authenticates a user.
+     * Authenticates an existing user and returns a JWT token.
      *
      * @param loginRequest The request body containing the user's login credentials.
-     * @return A `ResponseEntity` containing the login response, or an error message.
+     * @return A {@link ResponseEntity} containing the {@link LoginResponse} with the JWT token.
      */
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -50,10 +59,10 @@ public class AuthController {
     }
 
     /**
-     * Logs out a user.
+     * Logs out the currently authenticated user.
      *
-     * @param token The authorization token of the user to be logged out.
-     * @return A `ResponseEntity` indicating the result of the logout attempt.
+     * @param token The JWT token of the user to be logged out.
+     * @return A {@link ResponseEntity} indicating the result of the logout attempt.
      */
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token) {

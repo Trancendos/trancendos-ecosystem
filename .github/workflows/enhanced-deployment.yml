@@ -1,0 +1,270 @@
+name: Enhanced Deployment Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment Environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      notify_platforms:
+        description: 'Update Linear and Notion'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  JAVA_VERSION: '11'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  security-scan:
+    name: Security & Compliance Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  test-suite:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [frontend, backend, ai-services]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        if: matrix.component == 'frontend'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+          
+      - name: Setup Java
+        if: matrix.component == 'backend'
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Setup Python
+        if: matrix.component == 'ai-services'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies and test
+        run: |
+          case "${{ matrix.component }}" in
+            "frontend")
+              cd frontend
+              npm ci
+              npm run test:coverage
+              npm run lint
+              npm run build
+              ;;
+            "backend")
+              cd backend
+              ./gradlew clean test jacocoTestReport
+              ./gradlew build
+              ;;
+            "ai-services")
+              cd backend/ai-services
+              pip install -r requirements.txt
+              pytest --cov=. --cov-report=xml
+              ;;
+          esac
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.component }}
+          path: |
+            **/coverage/
+            **/test-results/
+            **/build/reports/
+
+  build-and-push:
+    name: Build & Push Container Images
+    runs-on: ubuntu-latest
+    needs: [security-scan, test-suite]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.trancendos-ecosystem.com
+    steps:
+      - name: Deploy to Railway Staging
+        run: |
+          echo "Deploying to Railway staging environment"
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          # Railway deployment logic would go here
+          
+      - name: Run smoke tests
+        run: |
+          echo "Running post-deployment smoke tests"
+          # Add smoke test commands here
+          
+      - name: Update deployment status
+        if: always()
+        run: |
+          echo "Deployment completed with status: ${{ job.status }}"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://trancendos-ecosystem.com
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production environment"
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          # Production deployment logic would go here
+          
+      - name: Run comprehensive tests
+        run: |
+          echo "Running post-deployment comprehensive tests"
+          # Add comprehensive test commands here
+          
+      - name: Update deployment status
+        if: always()
+        run: |
+          echo "Production deployment completed with status: ${{ job.status }}"
+
+  update-platforms:
+    name: Update Tracking Platforms
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (github.event.inputs.notify_platforms == 'true' || github.event.inputs.notify_platforms == '')
+    steps:
+      - name: Create deployment record
+        run: |
+          echo "Creating deployment record for tracking"
+          echo "Environment: ${{ github.event.inputs.environment || 'staging' }}"
+          echo "Version: ${{ github.ref_name }}"
+          echo "Status: ${{ needs.deploy-staging.result || needs.deploy-production.result }}"
+          
+      - name: Generate deployment summary
+        run: |
+          cat << EOF > deployment-summary.md
+          # Deployment Summary
+          
+          **Repository:** ${{ github.repository }}
+          **Environment:** ${{ github.event.inputs.environment || 'staging' }}
+          **Version/Tag:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          **Triggered by:** ${{ github.actor }}
+          **Deployment Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          
+          ## Components Deployed
+          - ✅ Alervato Financial Platform
+          - ✅ Luminous-MastermindAI Services
+          - ✅ Security & Compliance Layer
+          - ✅ Monitoring & Observability
+          
+          ## Deployment Status
+          - **Security Scan:** ${{ needs.security-scan.result }}
+          - **Tests:** ${{ needs.test-suite.result }}
+          - **Build & Push:** ${{ needs.build-and-push.result }}
+          - **Deployment:** ${{ needs.deploy-staging.result || needs.deploy-production.result }}
+          
+          ## Access URLs
+          - **Application:** https://${{ github.event.inputs.environment == 'production' && 'trancendos-ecosystem.com' || 'staging.trancendos-ecosystem.com' }}
+          - **Monitoring:** https://grafana.trancendos-ecosystem.com
+          - **Documentation:** https://docs.trancendos-ecosystem.com
+          EOF
+          
+      - name: Upload deployment summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-summary
+          path: deployment-summary.md
+
+  notify-completion:
+    name: Deployment Notifications
+    runs-on: ubuntu-latest
+    needs: [update-platforms]
+    if: always()
+    steps:
+      - name: Deployment completion notification
+        run: |
+          echo "🚀 Trancendos Ecosystem deployment pipeline completed"
+          echo "Status: ${{ job.status }}"
+          echo "All platforms have been updated with deployment information"

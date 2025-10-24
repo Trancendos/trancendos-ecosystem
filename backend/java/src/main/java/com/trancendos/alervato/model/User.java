@@ -12,15 +12,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a user in the system.
- * 
- * This entity stores user authentication and profile information,
- * including credentials, personal details, and audit timestamps.
- * Users can have multiple roles assigned through the user_roles relationship.
- * 
- * @author Trancendos Development Team
+ * Represents a user of the application.
+ * <p>
+ * This entity is mapped to the "users" table in the database and contains
+ * personal and authentication information for a user.
+ *
+ * @author Trancendos
  * @version 1.0
- * @since 1.0
  */
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -30,58 +28,93 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 public class User {
     
+    /**
+     * The unique identifier for the user.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * The user's unique username.
+     */
     @NotBlank
     @Column(nullable = false, unique = true)
     private String username;
     
+    /**
+     * The user's unique email address.
+     */
     @NotBlank
     @Email
     @Column(nullable = false, unique = true)
     private String email;
     
+    /**
+     * The user's hashed password.
+     */
     @NotBlank
     @Column(nullable = false)
     private String password;
     
+    /**
+     * The user's first name.
+     */
     @Column(name = "first_name")
     private String firstName;
     
+    /**
+     * The user's last name.
+     */
     @Column(name = "last_name")
     private String lastName;
     
+    /**
+     * The user's phone number.
+     */
     @Column(name = "phone_number")
     private String phoneNumber;
     
+    /**
+     * A flag indicating whether the user's account is active.
+     */
     @Column(name = "is_active")
     private Boolean isActive = true;
     
+    /**
+     * The timestamp when the user account was created.
+     */
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    /**
+     * The timestamp when the user account was last updated.
+     */
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    /**
+     * The set of roles assigned to the user.
+     */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
     
-    // Constructors
+    /**
+     * Default constructor.
+     */
     public User() {}
     
     /**
-     * Creates a new User with the specified credentials.
-     * 
-     * @param username the unique username for the user
-     * @param email the user's email address
-     * @param password the user's encrypted password
+     * Constructs a new User with the specified username, email, and password.
+     *
+     * @param username The user's username.
+     * @param email    The user's email address.
+     * @param password The user's password.
      */
     public User(String username, String email, String password) {
         this.username = username;
