@@ -4,6 +4,10 @@
 
 A comprehensive fintech ecosystem featuring the Alervato financial management platform and Luminous-MastermindAI components, designed for production deployment with enterprise-grade security and compliance.
 
+## Purpose
+
+This repository holds the infrastructure configuration (Docker, CI/CD) and high-level documentation for the 'Trancendos Ecosystem' project. It serves as the central point for developers to understand the system architecture, set up their development environments, and follow deployment procedures. The application source code for the various microservices is contained within their respective directories (`/frontend`, `/backend/java`, `/backend/python`).
+
 ## Architecture Overview
 
 ### Core Components
@@ -54,7 +58,7 @@ git clone https://github.com/Trancendos/trancendos-ecosystem.git
 cd trancendos-ecosystem
 
 # Start development environment
-docker-compose -f docker-compose.dev.yml up
+docker-compose up
 
 # Initialize services
 npm run setup:dev
