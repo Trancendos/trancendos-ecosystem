@@ -12,7 +12,7 @@ import axios from 'axios';
 
 /**
  * Login component for user authentication.
- * @returns {JSX.Element} The login form component.
+ * @return {JSX.Element} The login form component.
  */
 const Login = () => {
   const [credentials, setCredentials] = useState({
