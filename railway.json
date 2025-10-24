@@ -1,0 +1,70 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKER",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "sleepApplication": false,
+    "restartPolicyType": "ON_FAILURE"
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production",
+        "ENVIRONMENT": "production",
+        "SPRING_PROFILES_ACTIVE": "production"
+      }
+    }
+  },
+  "services": [
+    {
+      "name": "frontend",
+      "source": {
+        "repo": "Trancendos/trancendos-ecosystem",
+        "rootDirectory": "frontend"
+      },
+      "variables": {
+        "NODE_ENV": "production",
+        "PORT": "3000"
+      }
+    },
+    {
+      "name": "backend-python",
+      "source": {
+        "repo": "Trancendos/trancendos-ecosystem",
+        "rootDirectory": "backend/python"
+      },
+      "variables": {
+        "ENVIRONMENT": "production",
+        "PORT": "8000"
+      }
+    },
+    {
+      "name": "backend-java",
+      "source": {
+        "repo": "Trancendos/trancendos-ecosystem",
+        "rootDirectory": "backend/java"
+      },
+      "variables": {
+        "SPRING_PROFILES_ACTIVE": "production",
+        "PORT": "8080"
+      }
+    }
+  ],
+  "plugins": [
+    {
+      "name": "postgresql",
+      "config": {
+        "version": "15"
+      }
+    },
+    {
+      "name": "redis",
+      "config": {
+        "version": "7"
+      }
+    }
+  ]
+}
