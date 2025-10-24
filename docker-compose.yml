@@ -1,6 +1,10 @@
+# This is the Docker Compose file for the Trancendos Ecosystem.
+# It defines the services that make up the application and how they should be run.
 version: '3.8'
 
+# This section defines the services that make up the application.
 services:
+  # The frontend service is responsible for the user interface of the application.
   frontend:
     build:
       context: ./frontend
@@ -16,6 +20,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Java backend service is responsible for the core business logic of the application.
   backend-java:
     build:
       context: ./backend/java
@@ -32,6 +37,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Python backend service is responsible for the AI/ML features of the application.
   backend-python:
     build:
       context: ./backend/python
@@ -48,6 +54,7 @@ services:
     networks:
       - trancendos-network
 
+  # The PostgreSQL service is the primary database for the application.
   postgres:
     image: postgres:15-alpine
     environment:
@@ -62,6 +69,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Redis service is used for caching and message brokering.
   redis:
     image: redis:7-alpine
     ports:
@@ -71,6 +79,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Prometheus service is used for collecting metrics from the application.
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -84,6 +93,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Grafana service is used for visualizing the metrics collected by Prometheus.
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -96,6 +106,7 @@ services:
     networks:
       - trancendos-network
 
+  # The Nginx service is used as a reverse proxy for the application.
   nginx:
     image: nginx:alpine
     ports:
@@ -111,12 +122,14 @@ services:
     networks:
       - trancendos-network
 
+# This section defines the volumes that are used by the services.
 volumes:
   postgres_data:
   redis_data:
   prometheus_data:
   grafana_data:
 
+# This section defines the networks that are used by the services.
 networks:
   trancendos-network:
     driver: bridge

@@ -1,20 +1,32 @@
+# This workflow defines the Continuous Integration and Continuous Deployment (CI/CD) pipeline for the Trancendos Ecosystem.
 name: Trancendos Ecosystem CI/CD
 
+# This section defines the triggers for the workflow.
 on:
+  # The workflow will run on any push to the main or develop branches.
   push:
     branches: [main, develop]
+  # The workflow will also run on any pull request that targets the main branch.
   pull_request:
     branches: [main]
 
+# This section defines environment variables that are available to all jobs in the workflow.
 env:
+  # The Docker registry to use for storing the Docker images.
   REGISTRY: ghcr.io
+  # The name of the Docker image, which is derived from the GitHub repository name.
   IMAGE_NAME: ${{ github.repository }}
 
+# This section defines the jobs that will be executed as part of the workflow.
 jobs:
+  # This job performs a security scan of the repository.
   security-scan:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
     steps:
+      # This step checks out the source code of the repository.
       - uses: actions/checkout@v4
+      # This step runs the Trivy vulnerability scanner to scan the repository for vulnerabilities.
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -22,90 +34,121 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
+      # This step uploads the Trivy scan results to the GitHub Security tab.
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
 
+  # This job builds the frontend application.
   build-frontend:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the security-scan job, so it will only run after the security-scan job has completed successfully.
     needs: security-scan
     steps:
+      # This step checks out the source code of the repository.
       - uses: actions/checkout@v4
+      # This step sets up the Node.js environment.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
+      # This step installs the dependencies for the frontend application.
       - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
+      # This step runs the tests for the frontend application.
       - name: Run tests
         run: npm test -- --coverage
         working-directory: ./frontend
+      # This step builds the frontend application.
       - name: Build application
         run: npm run build
         working-directory: ./frontend
+      # This step uploads the build artifacts to be used in other jobs.
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: frontend-build
           path: frontend/build/
 
+  # This job builds the Java backend application.
   build-backend-java:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the security-scan job, so it will only run after the security-scan job has completed successfully.
     needs: security-scan
     steps:
+      # This step checks out the source code of the repository.
       - uses: actions/checkout@v4
+      # This step sets up the Java environment.
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
+      # This step caches the Maven dependencies to speed up future builds.
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+      # This step runs the tests for the Java backend application.
       - name: Run tests
         run: mvn test
         working-directory: ./backend/java
+      # This step builds the JAR file for the Java backend application.
       - name: Build JAR
         run: mvn clean package
         working-directory: ./backend/java
 
+  # This job builds the Python backend application.
   build-backend-python:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the security-scan job, so it will only run after the security-scan job has completed successfully.
     needs: security-scan
     steps:
+      # This step checks out the source code of the repository.
       - uses: actions/checkout@v4
+      # This step sets up the Python environment.
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+      # This step installs the dependencies for the Python backend application.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
         working-directory: ./backend/python
+      # This step runs the tests for the Python backend application.
       - name: Run tests
         run: pytest --cov=.
         working-directory: ./backend/python
 
+  # This job builds and pushes the Docker images for the services.
   docker-build:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the build-frontend, build-backend-java, and build-backend-python jobs, so it will only run after all of them have completed successfully.
     needs: [build-frontend, build-backend-java, build-backend-python]
     permissions:
       contents: read
       packages: write
     steps:
+      # This step checks out the source code of the repository.
       - uses: actions/checkout@v4
+      # This step logs in to the Docker registry.
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # This step builds and pushes the Docker images for the services.
       - name: Build and push Docker images
         uses: docker/build-push-action@v5
         with:
@@ -113,31 +156,48 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
+  # This job deploys the application to the staging environment.
   deploy-staging:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the docker-build job, so it will only run after the docker-build job has completed successfully.
     needs: docker-build
+    # This job will only run if the push is to the develop branch.
     if: github.ref == 'refs/heads/develop'
+    # This job uses the staging environment.
     environment: staging
     steps:
+      # This step deploys the application to the staging environment.
       - name: Deploy to staging
         run: echo "Deploying to staging environment"
         # Add staging deployment commands here
 
+  # This job deploys the application to the production environment.
   deploy-production:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the docker-build job, so it will only run after the docker-build job has completed successfully.
     needs: docker-build
+    # This job will only run if the push is to the main branch.
     if: github.ref == 'refs/heads/main'
+    # This job uses the production environment.
     environment: production
     steps:
+      # This step deploys the application to the production environment.
       - name: Deploy to production
         run: echo "Deploying to production environment"
         # Add production deployment commands here
 
+  # This job sends a notification to Slack.
   notify-slack:
+    # The job will run on the latest version of Ubuntu.
     runs-on: ubuntu-latest
+    # This job depends on the deploy-staging and deploy-production jobs, so it will run after either of them has completed.
     needs: [deploy-staging, deploy-production]
+    # This job will always run, even if the previous jobs have failed.
     if: always()
     steps:
+      # This step sends a notification to Slack with the status of the deployment.
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
         with:
