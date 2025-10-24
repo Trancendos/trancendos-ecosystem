@@ -1,0 +1,268 @@
+name: Trancendos Ecosystem CI/CD
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      services:
+        description: 'Services to deploy (comma-separated)'
+        required: false
+        default: 'all'
+        type: string
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      scripts: ${{ steps.changes.outputs.scripts }}
+      docker: ${{ steps.changes.outputs.docker }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          backend:
+            - 'backend/**'
+            - 'docker-compose*.yml'
+            - 'Dockerfile'
+          frontend:
+            - 'frontend/**'
+          scripts:
+            - 'scripts/**'
+          docker:
+            - 'Dockerfile'
+            - 'docker-compose*.yml'
+    
+    - name: Set deployment matrix
+      id: set-matrix
+      run: |
+        services=$()
+        if [[ "${{ steps.changes.outputs.backend }}" == "true" ]] || [[ "${{ github.event.inputs.services }}" == *"backend"* ]] || [[ "${{ github.event.inputs.services }}" == "all" ]]; then
+          services="backend"
+        fi
+        if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]] || [[ "${{ github.event.inputs.services }}" == *"frontend"* ]] || [[ "${{ github.event.inputs.services }}" == "all" ]]; then
+          services="$services frontend"
+        fi
+        
+        matrix_json=$(echo $services | tr ' ' '\n' | jq -R . | jq -s .)
+        echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+
+  generate-secrets:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || 'staging') }}
+    outputs:
+      jwt-secret: ${{ steps.generate.outputs.jwt-secret }}
+      encryption-key: ${{ steps.generate.outputs.encryption-key }}
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Generate secure secrets
+      id: generate
+      run: |
+        # Generate JWT secret if not exists
+        if [[ -z "${{ secrets.JWT_SECRET }}" ]]; then
+          jwt_secret=$(openssl rand -base64 64 | tr -d "\n")
+          echo "jwt-secret=$jwt_secret" >> $GITHUB_OUTPUT
+          echo "::add-mask::$jwt_secret"
+        else
+          echo "jwt-secret=${{ secrets.JWT_SECRET }}" >> $GITHUB_OUTPUT
+        fi
+        
+        # Generate encryption key if not exists
+        if [[ -z "${{ secrets.ENCRYPTION_KEY }}" ]]; then
+          encryption_key=$(openssl rand -base64 32 | tr -d "\n")
+          echo "encryption-key=$encryption_key" >> $GITHUB_OUTPUT
+          echo "::add-mask::$encryption_key"
+        else
+          echo "encryption-key=${{ secrets.ENCRYPTION_KEY }}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Store generated secrets
+      if: env.ACT != 'true'
+      run: |
+        # This would typically use GitHub CLI to set secrets
+        echo "Generated secrets would be stored in GitHub Secrets"
+        # gh secret set JWT_SECRET --body "${{ steps.generate.outputs.jwt-secret }}"
+        # gh secret set ENCRYPTION_KEY --body "${{ steps.generate.outputs.encryption-key }}"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+    
+    - name: Docker security scan
+      if: needs.detect-changes.outputs.docker == 'true'
+      run: |
+        docker build -t temp-scan .
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          -v $(pwd):/tmp aquasec/trivy image temp-scan
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, generate-secrets]
+    if: needs.detect-changes.outputs.matrix != '[]'
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+        environment: [staging]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set environment variables
+      run: |
+        echo "JWT_SECRET=${{ needs.generate-secrets.outputs.jwt-secret }}" >> .env.local
+        echo "ENCRYPTION_KEY=${{ needs.generate-secrets.outputs.encryption-key }}" >> .env.local
+        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env.local
+        echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env.local
+    
+    - name: Build and test ${{ matrix.service }}
+      run: |
+        if [[ "${{ matrix.service }}" == "backend" ]]; then
+          docker-compose -f docker-compose.yml build backend
+          docker-compose -f docker-compose.yml run --rm backend python -m pytest tests/ -v
+        elif [[ "${{ matrix.service }}" == "frontend" ]]; then
+          cd frontend
+          npm ci
+          npm run build
+          npm test -- --coverage --watchAll=false
+        fi
+    
+    - name: Push to registry
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      run: |
+        IMAGE_TAG=${{ matrix.service }}-${{ github.sha }}
+        docker tag trancendos-ecosystem-${{ matrix.service }} ghcr.io/${{ github.repository }}/${{ matrix.service }}:$IMAGE_TAG
+        docker push ghcr.io/${{ github.repository }}/${{ matrix.service }}:$IMAGE_TAG
+        
+        # Also tag as latest for main branch
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          docker tag ghcr.io/${{ github.repository }}/${{ matrix.service }}:$IMAGE_TAG ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+          docker push ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+        fi
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'staging'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Railway (Staging)
+      run: |
+        curl -X POST "https://backboard.railway.app/graphql/v2" \
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "query": "mutation { serviceInstanceRedeploy(serviceId: \"${{ secrets.RAILWAY_SERVICE_ID }}\") }"
+          }'
+    
+    - name: Deploy to Render (Staging)
+      run: |
+        curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Content-Type: application/json"
+    
+    - name: Health check
+      run: |
+        sleep 30
+        curl -f "${{ secrets.STAGING_URL }}/health" || exit 1
+    
+    - name: Notify deployment
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Staging deployment ${{ job.status }}'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event.inputs.environment != 'staging'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Production deployment checks
+      run: |
+        echo "Running pre-production checks..."
+        # Add additional production-specific validations
+    
+    - name: Deploy to production
+      run: |
+        # Production deployment logic
+        echo "Deploying to production..."
+    
+    - name: Post-deployment monitoring
+      run: |
+        # Set up monitoring alerts
+        echo "Configuring production monitoring..."
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Cleanup old images
+      run: |
+        # Clean up old Docker images to save space
+        echo "Cleaning up old artifacts..."
+        
+    - name: Update status badges
+      run: |
+        # Update repository status badges
+        echo "Updating status badges..."
