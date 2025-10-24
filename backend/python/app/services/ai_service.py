@@ -277,7 +277,10 @@ class AIService:
         monthly_spending = df.groupby(df['transaction_date'].dt.to_period('M'))['amount'].sum()
         if len(monthly_spending) >= 2:
             trend = "increasing" if monthly_spending.iloc[-1] > monthly_spending.iloc[-2] else "decreasing"
-            change_pct = ((monthly_spending.iloc[-1] - monthly_spending.iloc[-2]) / monthly_spending.iloc[-2]) * 100
+            if monthly_spending.iloc[-2] > 0:
+                change_pct = ((monthly_spending.iloc[-1] - monthly_spending.iloc[-2]) / monthly_spending.iloc[-2]) * 100
+            else:
+                change_pct = 100.0 if monthly_spending.iloc[-1] > 0 else 0.0
             
             insights["spending_trends"].append({
                 "insight": f"Your spending is {trend} by {abs(change_pct):.1f}% compared to last month",
