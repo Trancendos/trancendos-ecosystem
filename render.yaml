@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: trancendos-frontend
+    env: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: trancendos-backend-python
+          property: host
+    
+  - type: web
+    name: trancendos-backend-python
+    env: python
+    buildCommand: cd backend/python && pip install -r requirements.txt
+    startCommand: cd backend/python && gunicorn --bind 0.0.0.0:$PORT app:app
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trancendos-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trancendos-redis
+          property: connectionString
+    
+  - type: web
+    name: trancendos-backend-java
+    env: java
+    buildCommand: cd backend/java && ./mvnw clean install
+    startCommand: cd backend/java && java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trancendos-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trancendos-redis
+          property: connectionString
+
+databases:
+  - name: trancendos-postgres
+    databaseName: trancendos
+    user: trancendos
+    
+  - name: trancendos-redis
+    type: redis
+    maxmemoryPolicy: allkeys-lru
