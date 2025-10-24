@@ -13,6 +13,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller for handling financial transaction operations.
+ * <p>
+ * This class provides REST endpoints for creating, retrieving, updating, and deleting
+ * transactions for the authenticated user. It uses {@link TransactionService} to
+ * perform the business logic.
+ *
+ * @author Trancendos
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/transactions")
 @CrossOrigin(origins = "*")
@@ -25,8 +35,8 @@ public class TransactionController {
      * Retrieves a paginated list of transactions for the authenticated user.
      *
      * @param authentication The authentication object containing the user's details.
-     * @param pageable The pagination information.
-     * @return A `ResponseEntity` containing a page of transactions.
+     * @param pageable       The pagination information.
+     * @return A {@link ResponseEntity} containing a {@link Page} of {@link Transaction} objects.
      */
     @GetMapping
     public ResponseEntity<Page<Transaction>> getUserTransactions(
@@ -40,9 +50,9 @@ public class TransactionController {
     /**
      * Creates a new transaction for the authenticated user.
      *
-     * @param transactionDTO The request body containing the transaction details.
+     * @param transactionDTO The request body containing the new transaction's details.
      * @param authentication The authentication object containing the user's details.
-     * @return A `ResponseEntity` containing the created transaction, or an error message.
+     * @return A {@link ResponseEntity} containing the created {@link Transaction}.
      */
     @PostMapping
     public ResponseEntity<?> createTransaction(
@@ -58,11 +68,11 @@ public class TransactionController {
     }
 
     /**
-     * Retrieves a specific transaction by its ID for the authenticated user.
+     * Retrieves a specific transaction by its ID.
      *
-     * @param id The ID of the transaction to retrieve.
+     * @param id             The ID of the transaction to retrieve.
      * @param authentication The authentication object containing the user's details.
-     * @return A `ResponseEntity` containing the requested transaction, or a not found response.
+     * @return A {@link ResponseEntity} containing the requested {@link Transaction}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransaction(
@@ -78,12 +88,12 @@ public class TransactionController {
     }
 
     /**
-     * Updates an existing transaction for the authenticated user.
+     * Updates an existing transaction.
      *
-     * @param id The ID of the transaction to update.
+     * @param id             The ID of the transaction to update.
      * @param transactionDTO The request body containing the updated transaction details.
      * @param authentication The authentication object containing the user's details.
-     * @return A `ResponseEntity` containing the updated transaction, or an error message.
+     * @return A {@link ResponseEntity} containing the updated {@link Transaction}.
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTransaction(
@@ -100,11 +110,11 @@ public class TransactionController {
     }
 
     /**
-     * Deletes a transaction for the authenticated user.
+     * Deletes a transaction by its ID.
      *
-     * @param id The ID of the transaction to delete.
+     * @param id             The ID of the transaction to delete.
      * @param authentication The authentication object containing the user's details.
-     * @return A `ResponseEntity` indicating the result of the deletion attempt.
+     * @return A {@link ResponseEntity} indicating the result of the deletion attempt.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransaction(
