@@ -1,3 +1,4 @@
+"""API router for version 1 of the Luminous-MastermindAI API."""
 from fastapi import APIRouter
 from app.api.v1.endpoints import analytics, predictions, ai_insights
 

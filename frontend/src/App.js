@@ -8,6 +8,10 @@ import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
 import FinanceDashboard from './components/FinanceDashboard/FinanceDashboard';
 import './App.css';
 
+/**
+ * The main application component that sets up the router and layout.
+ * @returns {JSX.Element} The rendered application component.
+ */
 function App() {
   return (
     <Router>

@@ -1,5 +1,16 @@
 import pytest
 from unittest.mock import patch, MagicMock
+import sys
+
+import pandas as pd
+import numpy as np
+# Mock pandas and other heavy dependencies to avoid installation
+sys.modules['sklearn'] = MagicMock()
+sys.modules['sklearn.ensemble'] = MagicMock()
+sys.modules['sklearn.preprocessing'] = MagicMock()
+sys.modules['sklearn.model_selection'] = MagicMock()
+sys.modules['joblib'] = MagicMock()
+
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -75,9 +86,11 @@ def test_generate_insights_empty(ai_service):
     assert not insights["spending_trends"]
     assert not insights["savings_opportunities"]
 
+@patch('app.services.ai_service.train_test_split')
 @patch('app.services.ai_service.RandomForestRegressor')
-def test_train_spending_predictor(mock_rf, ai_service, mock_transactions):
+def test_train_spending_predictor(mock_rf, mock_tts, ai_service, mock_transactions):
     """Test the spending predictor training method."""
+    mock_tts.return_value = (MagicMock(), MagicMock(), MagicMock(), MagicMock())
     # Mock the scaler to return a simple array
     ai_service.scaler.fit_transform.return_value = np.random.rand(len(mock_transactions) - 1, 7)
     ai_service.scaler.transform.return_value = np.random.rand(1, 7)
@@ -92,6 +105,14 @@ def test_train_spending_predictor(mock_rf, ai_service, mock_transactions):
     assert "test_score" in result
     mock_rf.assert_called_once()
     ai_service.spending_model.fit.assert_called_once()
+
+def test_train_spending_predictor_insufficient_data(ai_service, mock_transactions):
+    """Test training spending predictor with insufficient data."""
+    # Use a small number of transactions that is less than the required amount
+    small_transactions = mock_transactions[:5]
+    result = ai_service.train_spending_predictor(small_transactions)
+    assert not result["success"]
+    assert "Insufficient data for training" in result["message"]
 
 def test_predict_spending_no_model(ai_service):
     """Test spending prediction when the model is not trained."""
@@ -115,6 +136,16 @@ def test_predict_spending_success(mock_np_std, ai_service):
     assert result["success"]
     assert result["predicted_amount"] == 123.45
 
+def test_predict_spending_failure(ai_service):
+    """Test a failed spending prediction."""
+    ai_service.scaler.transform.side_effect = Exception("Test exception")
+
+    features = {'day_of_week': 3, 'month': 5}
+    result = ai_service.predict_spending(features)
+
+    assert not result["success"]
+    assert "Prediction failed: Test exception" in result["message"]
+
 @patch('app.services.ai_service.IsolationForest')
 def test_train_anomaly_detector(mock_if, ai_service, mock_transactions):
     """Test the anomaly detector training method."""
@@ -135,6 +166,14 @@ def test_train_anomaly_detector(mock_if, ai_service, mock_transactions):
     assert result["anomalies_detected"] == 5
     mock_if.assert_called_once()
     ai_service.anomaly_detector.fit.assert_called_once()
+
+def test_train_anomaly_detector_insufficient_data(ai_service, mock_transactions):
+    """Test training anomaly detector with insufficient data."""
+    # Use a small number of transactions that is less than the required amount
+    small_transactions = mock_transactions * 3  # 15 transactions
+    result = ai_service.train_anomaly_detector(small_transactions)
+    assert not result["success"]
+    assert "Insufficient data for anomaly detection training" in result["message"]
 
 def test_detect_anomalies_no_model(ai_service):
     """Test anomaly detection when the model is not trained."""

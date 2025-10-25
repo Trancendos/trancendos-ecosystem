@@ -107,7 +107,10 @@ async def get_spending_patterns(
         start_date = end_date - timedelta(days=days)
         
         # Get daily spending data
-        daily_spending = await analytics_service.get_daily_spending(user_id, start_date, end_date)
+        daily_spending_raw = await analytics_service.get_daily_spending(user_id, start_date, end_date)
+
+        # Filter out non-numeric data
+        daily_spending = [x for x in daily_spending_raw if isinstance(x, (int, float))]
         
         # Calculate patterns
         avg_daily_spending = np.mean(daily_spending) if daily_spending else 0
