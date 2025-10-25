@@ -1,0 +1,8 @@
+# DISABLED - Workflow was too complex and causing failures
+# This file has been moved to prevent execution conflicts
+# Original file was 19,909 characters and conflicting with other workflows
+# 
+# To re-enable: rename back to .yml after simplifying the workflow
+# 
+# Disabled on: 2025-10-25
+# Reason: Workflow execution conflicts and resource exhaustion
