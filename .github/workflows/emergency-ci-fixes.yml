@@ -1,4 +1,6 @@
 name: Emergency CI/CD Fixes
+permissions:
+  contents: read
 
 on:
   push:
