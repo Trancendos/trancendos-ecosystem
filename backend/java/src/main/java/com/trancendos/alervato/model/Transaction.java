@@ -10,57 +10,109 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a single financial transaction in the system.
+ * <p>
+ * This entity is mapped to the "transactions" table in the database and contains
+ * details about the transaction, such as its amount, type, and associated user.
+ *
+ * @author Trancendos
+ * @version 1.0
+ */
 @Entity
 @Table(name = "transactions")
 @EntityListeners(AuditingEntityListener.class)
 public class Transaction {
     
+    /**
+     * The unique identifier for the transaction.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * The monetary value of the transaction.
+     */
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
     
+    /**
+     * A brief description of the transaction.
+     */
     @Column(length = 500)
     private String description;
     
+    /**
+     * The type of the transaction (e.g., INCOME, EXPENSE).
+     */
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
     
+    /**
+     * The category of the transaction (e.g., "Groceries", "Salary").
+     */
     @Column(length = 100)
     private String category;
     
+    /**
+     * The user who made the transaction.
+     */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
+    /**
+     * The timestamp when the transaction was created.
+     */
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    /**
+     * The timestamp when the transaction was last updated.
+     */
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    /**
+     * The actual date of the transaction.
+     */
     @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
     
+    /**
+     * A unique reference number for the transaction.
+     */
     @Column(name = "reference_number", unique = true)
     private String referenceNumber;
     
+    /**
+     * Enumeration for the type of a financial transaction.
+     */
     public enum TransactionType {
         INCOME, EXPENSE, TRANSFER
     }
     
-    // Constructors
+    /**
+     * Default constructor.
+     */
     public Transaction() {}
     
+    /**
+     * Constructs a new Transaction with the specified details.
+     *
+     * @param amount      The amount of the transaction.
+     * @param description A description of the transaction.
+     * @param type        The type of the transaction.
+     * @param user        The user associated with the transaction.
+     */
     public Transaction(BigDecimal amount, String description, TransactionType type, User user) {
         this.amount = amount;
         this.description = description;

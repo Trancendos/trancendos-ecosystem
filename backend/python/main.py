@@ -26,6 +26,16 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Asynchronous context manager for the FastAPI application's lifespan.
+
+    This context manager handles the startup and shutdown events of the application.
+    During startup, it logs a message and creates the necessary database tables.
+    During shutdown, it logs a message.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+    """
     # Startup
     logger.info("Starting Luminous-MastermindAI service")
     await create_tables()
@@ -68,6 +78,12 @@ app.mount("/metrics", metrics_app)
 
 @app.get("/")
 async def root():
+    """
+    Root endpoint for the Luminous-MastermindAI service.
+
+    Returns:
+        dict: A dictionary containing the service name, version, status, and description.
+    """
     return {
         "service": "Luminous-MastermindAI",
         "version": "1.0.0",
@@ -77,6 +93,12 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    """
+    Health check endpoint for the Luminous-MastermindAI service.
+
+    Returns:
+        dict: A dictionary containing the status, service name, and version.
+    """
     return {
         "status": "healthy",
         "service": "luminous-mastermind-ai",
@@ -85,6 +107,18 @@ async def health_check():
 
 # Dependency for authentication
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Dependency to get the current user from the authentication token.
+
+    Args:
+        credentials (HTTPAuthorizationCredentials): The HTTP Authorization credentials.
+
+    Raises:
+        HTTPException: If the authentication credentials are not valid.
+
+    Returns:
+        dict: The payload of the verified token.
+    """
     try:
         token = credentials.credentials
         payload = verify_token(token)

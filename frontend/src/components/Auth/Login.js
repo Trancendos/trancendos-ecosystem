@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Login component for user authentication.
+ * @version 1.0.0
+ * @author Trancendos
+ */
+
 import React, { useState } from 'react';
 import {
   Container,
@@ -10,14 +16,38 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
+/**
+ * A component that renders a login form for user authentication.
+ *
+ * @returns {JSX.Element} The rendered login form.
+ */
 const Login = () => {
+  /**
+   * State for storing user credentials.
+   * @type {[object, function]}
+   */
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
   });
+
+  /**
+   * State for storing login error messages.
+   * @type {[string, function]}
+   */
   const [error, setError] = useState('');
+
+  /**
+   * State for tracking the loading status of the login request.
+   * @type {[boolean, function]}
+   */
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles changes to the form's input fields.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e The event object.
+   */
   const handleChange = (e) => {
     setCredentials({
       ...credentials,
@@ -25,6 +55,11 @@ const Login = () => {
     });
   };
 
+  /**
+   * Handles the form submission.
+   *
+   * @param {React.FormEvent<HTMLFormElement>} e The event object.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
