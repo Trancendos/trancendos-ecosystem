@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Login from './components/Auth/Login';
 import TransactionList from './components/Transactions/TransactionList';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
+import FinanceDashboard from './components/FinanceDashboard/FinanceDashboard';
 import './App.css';
 
 /**
@@ -29,6 +30,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/transactions" element={<TransactionList />} />
             <Route path="/analytics" element={<AnalyticsDashboard />} />
+            <Route path="/finance" element={<FinanceDashboard />} />
           </Routes>
         </Container>
       </div>
