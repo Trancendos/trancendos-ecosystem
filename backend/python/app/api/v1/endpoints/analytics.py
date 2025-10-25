@@ -61,7 +61,7 @@ async def get_analytics_overview(
         transaction_count = await analytics_service.get_transaction_count(user_id, start_date, end_date)
         
         # Calculate savings rate
-        savings_rate = (net_savings / total_income * 100) if total_income > 0 else 0
+        savings_rate = (net_savings / total_income * 100) if total_income != 0 else 0
         
         # Get top spending categories
         top_categories = await analytics_service.get_top_spending_categories(user_id, start_date, end_date)
