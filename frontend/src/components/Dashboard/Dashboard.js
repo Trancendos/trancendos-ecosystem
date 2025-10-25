@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import SpendHistory from '../SpendHistory/SpendHistory';
 
 /**
  * A component that renders the main financial dashboard.
@@ -150,6 +151,9 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        </Grid>
+        <Grid item xs={12}>
+          <SpendHistory />
         </Grid>
       </Grid>
     </Box>
