@@ -2,98 +2,94 @@
 
 ## Financial Autonomy Platform with AI-Powered Scalability
 
-A comprehensive fintech ecosystem featuring the Alervato financial management platform and Luminous-MastermindAI components, designed for production deployment with enterprise-grade security and compliance.
+Welcome to the Trancendos Ecosystem, a comprehensive fintech platform featuring the Alervato financial management system and the Luminous-MastermindAI analytics engine. This repository contains the full source code and infrastructure configuration for a production-ready, enterprise-grade financial application.
 
 ## Architecture Overview
 
-### Core Components
-- **Alervato**: Financial management and transaction processing platform
-- **Luminous-MastermindAI**: AI-powered analytics and decision support system
-- **Security Layer**: PCI DSS compliant authentication and authorization
-- **Monitoring Stack**: Comprehensive observability and compliance tracking
+The Trancendos Ecosystem is built on a microservices architecture, orchestrated with Docker Compose. The core components are:
+
+-   **Frontend**: A modern React application that serves as the user interface for the platform.
+-   **Java Backend (`backend-java`)**: A Spring Boot application responsible for core financial management, transaction processing, and user authentication.
+-   **Python Backend (`backend-python`)**: A FastAPI application that powers the Luminous-MastermindAI features, including financial analytics, predictions, and insights.
+-   **PostgreSQL (`postgres`)**: The primary relational database for storing user data and financial transactions.
+-   **Redis (`redis`)**: An in-memory data store used for caching and session management to improve performance.
+-   **Nginx (`nginx`)**: A reverse proxy that routes incoming traffic to the appropriate frontend or backend service.
+-   **Prometheus & Grafana**: A monitoring stack for collecting metrics and visualizing system health and performance.
 
 ### Technology Stack
-- **Frontend**: React with micro-frontends architecture
-- **Backend**: Java (Spring Boot) and Python (FastAPI/Django)
-- **Database**: PostgreSQL with Redis caching
-- **Infrastructure**: Docker, Kubernetes, CI/CD with GitHub Actions
-- **Monitoring**: Prometheus, Grafana, ELK Stack
 
-## Production Readiness Status
+-   **Frontend**: React, Redux, Material-UI
+-   **Backend**: Java (Spring Boot), Python (FastAPI)
+-   **Database**: PostgreSQL, Redis
+-   **Infrastructure**: Docker, Docker Compose, Nginx
+-   **Monitoring**: Prometheus, Grafana
 
-### Security & Compliance ✅
-- [x] OAuth 2.0/OpenID Connect implementation
-- [x] PCI DSS compliance framework
-- [x] Financial data encryption standards
-- [x] Audit logging infrastructure
+## Getting Started
 
-### Automation & CI/CD 🚧
-- [x] GitHub Actions pipelines
-- [x] Docker containerization
-- [ ] Kubernetes orchestration
-- [ ] Security scanning integration
-
-### Monitoring & Observability 🚧
-- [x] Prometheus metrics collection
-- [x] Grafana dashboards
-- [ ] Distributed tracing with OpenTelemetry
-- [ ] Real-time alerting system
-
-## Quick Start
+Follow these instructions to set up and run the Trancendos Ecosystem on your local machine.
 
 ### Prerequisites
-- Docker Desktop
-- Node.js 18+
-- Java 11+
-- Python 3.9+
+
+-   [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/) are the **only** requirements. You do not need to install Node.js, Java, or Python on your host machine, as all services run inside isolated Docker containers.
 
 ### Development Setup
-```bash
-# Clone the repository
-git clone https://github.com/Trancendos/trancendos-ecosystem.git
-cd trancendos-ecosystem
 
-# Start development environment
-docker-compose -f docker-compose.dev.yml up
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/Trancendos/trancendos-ecosystem.git
+    cd trancendos-ecosystem
+    ```
 
-# Initialize services
-npm run setup:dev
-```
+2.  **Configure Environment Variables**
+    The application uses a `.env` file to manage sensitive configuration. Start by copying the example file:
+    ```bash
+    cp .env.example .env
+    ```
+    Now, open the `.env` file and set the required passwords for the PostgreSQL database and Grafana:
+    ```
+    POSTGRES_PASSWORD=your_strong_postgres_password
+    GRAFANA_PASSWORD=your_strong_grafana_admin_password
+    ```
 
-### Production Deployment
-```bash
-# Deploy to staging
-npm run deploy:staging
+3.  **Build and Run the Application**
+    Use Docker Compose to build the images and start all the services:
+    ```bash
+    docker-compose up --build
+    ```
+    This command will build the Docker images for the frontend and backend services and start all containers. It may take some time on the first run.
 
-# Deploy to production (requires approval)
-npm run deploy:production
-```
+4.  **Access the Services**
+    Once all services are running, you can access them at the following local addresses:
+    -   **Frontend Application**: [http://localhost:3000](http://localhost:3000)
+    -   **Grafana Dashboard**: [http://localhost:3001](http://localhost:3001) (log in with `admin` and the password you set in the `.env` file)
+    -   **Prometheus Metrics**: [http://localhost:9090](http://localhost:9090)
 
 ## Security Notice
 
-This application handles financial data and requires strict security measures:
-- All API endpoints are rate-limited and authenticated
-- Data encryption in transit and at rest
-- Regular security audits and compliance checks
-- Incident response procedures documented in `/docs/security`
+This application handles sensitive financial data and is designed with strict security measures in mind:
+-   All API endpoints are intended to be authenticated and rate-limited in a production environment.
+-   Data is encrypted in transit and at rest.
+-   The codebase includes comprehensive audit logging and compliance checks.
 
 ## Documentation
 
-- [Architecture Documentation](docs/architecture.md)
-- [API Reference](docs/api.md)
-- [Security Guidelines](docs/security.md)
-- [Deployment Guide](docs/deployment.md)
-- [Compliance Framework](docs/compliance.md)
-
-## Integrations
-
-- **Notion**: Documentation and knowledge management
-- **Linear**: Issue tracking and project management
-- **Slack**: Team communication and alerts
+All documentation is embedded directly within the source code, following standard conventions for each programming language (JSDoc, Javadoc, and Google Style Python Docstrings). This ensures that the documentation is always up-to-date with the code.
 
 ## License
 
 Proprietary - All rights reserved
+
+## Future Developments
+
+### AI-Powered Financial Advisor
+
+A key strategic goal for the Trancendos Ecosystem is the development of an advanced AI-powered financial advisor. This system will be designed to:
+
+*   **Manage Financial Frameworks:** Ensure compliance with financial regulations and internal policies.
+*   **Analyze New Income Opportunities:** Identify and evaluate new passive income generation strategies and models.
+*   **Expand Investment Portfolio:** Proactively manage and grow a portfolio of services and investments over time.
+
+This feature will be built upon the foundational "Finance and Accountancy Module" and will be a major focus of future development efforts.
 
 ## Contact
 

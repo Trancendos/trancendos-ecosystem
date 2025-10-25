@@ -8,6 +8,9 @@ import { store } from './store/store';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
+/**
+ * The theme for the application.
+ */
 const theme = createTheme({
   palette: {
     primary: {

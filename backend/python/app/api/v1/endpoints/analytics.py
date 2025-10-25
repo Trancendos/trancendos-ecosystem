@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
+from enum import Enum
 import pandas as pd
 import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,13 @@ from app.schemas.analytics import (
 from app.services.analytics_service import AnalyticsService
 from main import get_current_user
 
+
+class PeriodEnum(str, Enum):
+    daily = "daily"
+    weekly = "weekly"
+    monthly = "monthly"
+
+
 router = APIRouter()
 
 @router.get("/overview", response_model=AnalyticsResponse)
@@ -24,8 +32,18 @@ async def get_analytics_overview(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Get comprehensive analytics overview for the user
+    """Retrieves a comprehensive analytics overview for the current user.
+
+    Args:
+        days (int): The number of days to include in the analytics period.
+        current_user (dict): The authenticated user's information, injected by Depends.
+        db (AsyncSession): The database session, injected by Depends.
+
+    Returns:
+        AnalyticsResponse: An object containing the analytics overview.
+
+    Raises:
+        HTTPException: If the analytics calculation fails.
     """
     analytics_service = AnalyticsService(db)
     
@@ -68,8 +86,18 @@ async def get_spending_patterns(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Analyze spending patterns and identify trends
+    """Analyzes the user's spending patterns and identifies trends.
+
+    Args:
+        days (int): The number of days to include in the analysis period.
+        current_user (dict): The authenticated user's information, injected by Depends.
+        db (AsyncSession): The database session, injected by Depends.
+
+    Returns:
+        SpendingPatternResponse: An object containing the spending pattern analysis.
+
+    Raises:
+        HTTPException: If the pattern analysis fails.
     """
     analytics_service = AnalyticsService(db)
     
@@ -79,7 +107,10 @@ async def get_spending_patterns(
         start_date = end_date - timedelta(days=days)
         
         # Get daily spending data
-        daily_spending = await analytics_service.get_daily_spending(user_id, start_date, end_date)
+        daily_spending_raw = await analytics_service.get_daily_spending(user_id, start_date, end_date)
+
+        # Filter out non-numeric data
+        daily_spending = [x for x in daily_spending_raw if isinstance(x, (int, float))]
         
         # Calculate patterns
         avg_daily_spending = np.mean(daily_spending) if daily_spending else 0
@@ -110,8 +141,19 @@ async def get_category_analysis(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Detailed analysis of spending by category
+    """Provides a detailed analysis of spending by category.
+
+    Args:
+        category (Optional[str]): The specific category to analyze. If None, analyzes all categories.
+        days (int): The number of days to include in the analysis period.
+        current_user (dict): The authenticated user's information, injected by Depends.
+        db (AsyncSession): The database session, injected by Depends.
+
+    Returns:
+        CategoryAnalysisResponse: An object containing the category analysis.
+
+    Raises:
+        HTTPException: If the category analysis fails.
     """
     analytics_service = AnalyticsService(db)
     
@@ -140,12 +182,23 @@ async def get_category_analysis(
 @router.get("/trends", response_model=TrendAnalysisResponse)
 async def get_trend_analysis(
     trend_type: str = "spending",
-    period: str = "monthly",  # daily, weekly, monthly
+    period: PeriodEnum = PeriodEnum.monthly,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Analyze financial trends over time
+    """Analyzes financial trends over a specified period.
+
+    Args:
+        trend_type (str): The type of trend to analyze (e.g., "spending").
+        period (str): The time period for the analysis (e.g., "daily", "weekly", "monthly").
+        current_user (dict): The authenticated user's information, injected by Depends.
+        db (AsyncSession): The database session, injected by Depends.
+
+    Returns:
+        TrendAnalysisResponse: An object containing the trend analysis data.
+
+    Raises:
+        HTTPException: If the trend analysis fails.
     """
     analytics_service = AnalyticsService(db)
     

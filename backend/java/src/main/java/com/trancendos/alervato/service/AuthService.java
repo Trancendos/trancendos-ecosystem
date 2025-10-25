@@ -19,6 +19,16 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Service class for handling user authentication operations.
+ * <p>
+ * This class provides business logic for user registration, login, and logout.
+ * It interacts with the {@link UserRepository}, {@link RoleRepository}, and other
+ * security-related components.
+ *
+ * @author Trancendos
+ * @version 1.0
+ */
 @Service
 public class AuthService {
     
@@ -37,6 +47,12 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
     
+    /**
+     * Registers a new user in the system.
+     *
+     * @param registerRequest The request object containing the user's registration details.
+     * @throws RuntimeException if the username or email is already in use.
+     */
     public void registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new RuntimeException("Username is already taken!");
@@ -63,6 +79,12 @@ public class AuthService {
         userRepository.save(user);
     }
     
+    /**
+     * Authenticates an existing user and returns a JWT token.
+     *
+     * @param loginRequest The request object containing the user's login credentials.
+     * @return A {@link LoginResponse} containing the JWT token and user details.
+     */
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -76,6 +98,11 @@ public class AuthService {
         return new LoginResponse(jwt, user.getId(), user.getUsername(), user.getEmail());
     }
     
+    /**
+     * Logs out the currently authenticated user.
+     *
+     * @param token The JWT token of the user to be logged out.
+     */
     public void logoutUser(String token) {
         // Add token to blacklist (implement as needed)
         SecurityContextHolder.clearContext();

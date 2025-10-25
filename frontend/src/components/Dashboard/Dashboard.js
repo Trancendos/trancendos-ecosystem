@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Dashboard component for displaying financial overview.
+ * @version 1.0.0
+ * @author Trancendos
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   Grid,
@@ -10,11 +16,28 @@ import {
 import axios from 'axios';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
+/**
+ * A component that renders the main financial dashboard.
+ *
+ * @returns {JSX.Element} The rendered dashboard.
+ */
 const Dashboard = () => {
+  /**
+   * State for storing dashboard data.
+   * @type {[object|null, function]}
+   */
   const [dashboardData, setDashboardData] = useState(null);
+
+  /**
+   * State for tracking the loading status of the dashboard data.
+   * @type {[boolean, function]}
+   */
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Fetches the dashboard data from the API.
+     */
     const fetchDashboardData = async () => {
       try {
         const response = await axios.get('/api/dashboard');
